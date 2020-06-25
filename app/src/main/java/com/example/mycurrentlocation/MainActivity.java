@@ -70,9 +70,9 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     String documents;
     String latitude;
     String longitude;
-    ArrayList<String> oldData = new ArrayList<>();
     String myTime;
     String finalTime;
+    boolean addition;
     SharedPreferences shared;
     ArrayList<String> arrPackage;
     int i = 1;
@@ -88,12 +88,14 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     private FieldValue timestamp;
     int number_of_successful_pulls;
      //String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() % 10 + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
-    String name = "4";
+    String name = "7";
     private SharedPreferences prefs;
     private SharedPreferences.Editor edit;
+    Boolean firstSave;
     Gson gson;
     int number_of_pushes = 0;
     int count = 0;
+    ArrayList<String> oldData = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,6 +117,14 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
         edit.putInt("counter", totalCount);
         edit.commit();
+
+
+
+
+
+
+
+
         seachbutton = (Button) findViewById(R.id.button_location);//get id of button 1
         seachbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,6 +144,7 @@ button_location.setOnClickListener(new View.OnClickListener() {
         {
             Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more time for conformation ",Toast.LENGTH_LONG).show();
         }
+        if(updatedCount!=0)
         Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more times for conformation ",Toast.LENGTH_LONG).show();
 
         if(count==5) {
@@ -307,6 +318,7 @@ FetchData();
 
     public void FetchData()
     {
+       // oldData = getListFromLocal("X");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final DocumentReference docRef = db.collection(collections).document(documents);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -319,59 +331,58 @@ FetchData();
                 }
 
                 if (snapshot != null && snapshot.exists()) {
-                  //  Log.d(TAG, "Current data: " + snapshot.getData());
+                    //  Log.d(TAG, "Current data: " + snapshot.getData());
 
                     Map<String, Object> dataPulled = snapshot.getData();
 
                     Set<Map.Entry<String, Object>> entrySet = dataPulled.entrySet();
-                  //  Log.e(TAG,"loop begins");
+                    //  Log.e(TAG,"loop begins");
                     for (Map.Entry<String, Object> entry : entrySet) {
                         String key = entry.getKey();
                         String s = valueOf(entry.getValue());
                         String unformattedTime = s;
                         if ((unformattedTime.contains("=") && (unformattedTime.contains("=")))) {
-                          //  Log.e(TAG, "" + unformattedTime);
+
                             String formatTime = unformattedTime.substring(unformattedTime.indexOf('=') + 1, unformattedTime.indexOf(','));
                             String finalTime = formatTime.substring(0, formatTime.length() - 2);
-                          //  Log.e(TAG, " time "+finalTime);
-                           // Log.e(TAG,"My time = "+myTime);
-                            if (finalTime.equals(myTime)) {
-                              //  Log.e(TAG,"Loop continues with this person = "+key);
+
+
 
                                 if (!((key).equals(name))) {
-                                    Log.e(TAG,"Final stage ");
-                                    if(totalCount==0) {
+
+                                    if (oldData.isEmpty()) {
+
+                                        // Log.e(TAG,"This is the first time you are pulling data");
                                         saveListInLocal(oldData, "X");
 
                                         oldData = getListFromLocal("X");
-                                        if (!(oldData.contains(key))) {
+                                        if (finalTime.equals(myTime)) {
                                             oldData.add(key);
                                             saveListInLocal(oldData, "X");
-                                        }}
+                                        }
 
 
-
-
+                                    } else {
+                                        // Log.e(TAG,"This is not the first time we are pulling data ");
                                         oldData = getListFromLocal("X");
                                         if (!(oldData.contains(key))) {
-                                            oldData.add(key);
-                                        }
-                                        Log.e(TAG,"Here is the data so far => "+oldData.toString());
-                                        saveListInLocal(oldData, "X");
+                                            if (finalTime.equals(myTime)) {
 
-                                        totalCount++;
+                                                oldData.add(key);}
+                                            saveListInLocal(oldData, "X");
+                                        }
+                                        }
+                                        //  Log.e(TAG,oldData.toString());
 
 
                                     }
 
 
-
+                                }
                             }
-
                         }
-                    }
 
-                } else {
+                 else {
                     Log.d(TAG, "Current data: null");
                 }
             }
@@ -406,13 +417,19 @@ FetchData();
 
     public void DisplayCurrentData()
     {
-       if(totalCount>1) {
-           Log.e(TAG, "Here is the current data =>");
-           ArrayList<String> data = getListFromLocal("X");
-if(!(data==null)) {
-    Log.e(TAG, data.toString());
-}
-       }
+        ArrayList<String> currentData = new ArrayList<>();
+        currentData = getListFromLocal("X");
+
+        if(currentData.isEmpty())
+        {
+            Log.e(TAG,"No data stored yet");
+        }
+        else
+        {
+
+            Log.e(TAG,"The data stored is = "+currentData.toString());
+        }
+
     }
 
 
