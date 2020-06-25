@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <ImageView
+        android:layout_width="310dp"
+        android:layout_height="310dp"
+        android:src="@drawable/location" />
+
+    <Button
+        android:id="@+id/button_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CHECK FOR POSSIBLE COVID-19 EXPOSURES" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="tested covid-19 positive " />
+
+    <TextView
+        android:id="@+id/simpleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Falsified claims will cause further disruption of proper tracking and service."
+        android:textSize="15sp" /> <!--center horizontal gravity-->
+</LinearLayout>
