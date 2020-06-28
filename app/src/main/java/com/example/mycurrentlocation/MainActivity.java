@@ -1,11 +1,5 @@
 package com.example.mycurrentlocation;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -22,22 +16,26 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.reflect.TypeToken;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -48,7 +46,6 @@ import com.google.gson.Gson;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,11 +54,11 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 
-public class MainActivity<sensorManager> extends AppCompatActivity implements LocationListener, SensorEventListener {
+public class MainActivity<sensorManager> extends AppCompatActivity implements LocationListener, SensorEventListener, FirebaseAuth.AuthStateListener {
     public static final String SHARED_PREFS = "sharedPrefs";
     ArrayList<String> x = new ArrayList<>();
     ArrayList<String> users = new ArrayList<>();
-
+    ArrayList<String> oldData = new ArrayList<>();
     String saveData;
     String text;
     Boolean firstTimePush;
@@ -95,7 +92,8 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     Gson gson;
     int number_of_pushes = 0;
     int count = 0;
-    ArrayList<String> oldData = new ArrayList<>();
+    ArrayList<String> Cloud= new ArrayList<String>();
+    ArrayList<String> myData ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,32 +127,64 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         seachbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
-                CheckForPossibleExposure();
+            CheckForPossibleExposure();
+                Checker();
             }
         });
 button_location = (Button) findViewById(R.id.button);
 button_location.setOnClickListener(new View.OnClickListener() {
     @Override
     public void onClick(View v) {
+
         count++;
         int updatedCount = 5-count;
         if(updatedCount==1)
         {
             Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more time for conformation ",Toast.LENGTH_LONG).show();
         }
-        if(updatedCount!=0)
+        if(updatedCount>0)
         Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more times for conformation ",Toast.LENGTH_LONG).show();
 
-        if(count==5) {
+
+        if(updatedCount==0) {
+            Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
             pushInfo();
             Uri uri = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLScyVej-Hb7gu0HpYmjyszq1OaCHYlRRJ8X84YyKekf5u4LJjw/viewform"); // missing 'http://' will cause crashed
             Intent intent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(intent);
         }
+        if(updatedCount<0)
+        {
+            Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
+
+        }
+
+
     }
 });
+
+
+    if(FirebaseAuth.getInstance().getCurrentUser()==null)
+    {
+        Intent intent = new Intent(getApplicationContext(), LoginRegisterActivity.class);
+        startActivity(intent);
+        finish();
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     }
 
@@ -347,11 +377,17 @@ FetchData();
                             String finalTime = formatTime.substring(0, formatTime.length() - 2);
 
 
+                            if (!((key).equals(name))) {
+                                if (myTime.equals(finalTime)) {
+                                    DataSaver(key);
+                                }
+                            }}}}
 
-                                if (!((key).equals(name))) {
 
-                                    if (oldData.isEmpty()) {
 
+
+                                  /*  if ((oldData==null)||(oldData.isEmpty())) {
+                                        oldData = new ArrayList<>();
                                         // Log.e(TAG,"This is the first time you are pulling data");
                                         saveListInLocal(oldData, "X");
 
@@ -361,6 +397,7 @@ FetchData();
                                             saveListInLocal(oldData, "X");
                                         }
 
+                                        saveListInLocal(oldData,"X");
 
                                     } else {
                                         // Log.e(TAG,"This is not the first time we are pulling data ");
@@ -369,18 +406,19 @@ FetchData();
                                             if (finalTime.equals(myTime)) {
 
                                                 oldData.add(key);}
-                                            saveListInLocal(oldData, "X");
+                                           saveListInLocal(oldData, "X");
                                         }
                                         }
                                         //  Log.e(TAG,oldData.toString());
 
-
+                                       // saveListInLocal(oldData,"X");
                                     }
-
+                            ////saveListInLocal(oldData,"X");
 
                                 }
+                        //saveListInLocal(oldData,"X");
                             }
-                        }
+                    //saveListInLocal(oldData,"X");*/
 
                  else {
                     Log.d(TAG, "Current data: null");
@@ -391,6 +429,20 @@ FetchData();
 
     }
 
+
+    public void DataSaver(String data)
+    {
+        if(getListFromLocal("X")==null) {
+            saveListInLocal(oldData, "X");
+        }
+        oldData  = getListFromLocal("X");
+        if(!(oldData.contains(data))) {
+            oldData.add(data);
+        }
+
+        saveListInLocal(oldData,"X");
+
+    }
 
 
     public void saveListInLocal(ArrayList<String> list, String key) {
@@ -420,7 +472,7 @@ FetchData();
         ArrayList<String> currentData = new ArrayList<>();
         currentData = getListFromLocal("X");
 
-        if(currentData.isEmpty())
+        if(currentData==null)
         {
             Log.e(TAG,"No data stored yet");
         }
@@ -435,39 +487,56 @@ FetchData();
 
 public void CheckForPossibleExposure()
 {
+      Toast.makeText(getApplicationContext(),"Checking for exposures",Toast.LENGTH_SHORT);
+      myData = getListFromLocal("X");
+      if(myData!=null) {
+          Log.e(TAG, "Here are my exposures =>" + myData.toString());
 
-    final ArrayList<String> Cloud= new ArrayList<String>();
 
+          FirebaseFirestore db = FirebaseFirestore.getInstance();
+          DocumentReference docRef = db.collection("X").document("X");
+          docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+              @Override
+              public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                  @Nullable FirebaseFirestoreException e) {
+                  if (e != null) {
+                      Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+                      return;
+                  }
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    DocumentReference docRef = db.collection("X").document("X");
-    docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-        @Override
-        public void onEvent(@Nullable DocumentSnapshot snapshot,
-                            @Nullable FirebaseFirestoreException e) {
-            if (e != null) {
-                Toast.makeText( getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                  if (snapshot != null && snapshot.exists()) {
+                      //  Log.d(TAG, "Current data: " + snapshot.getData());
 
-            if (snapshot != null && snapshot.exists()) {
-                //  Log.d(TAG, "Current data: " + snapshot.getData());
+                      Map<String, Object> dataPulled = snapshot.getData();
 
-                Map<String, Object> dataPulled = snapshot.getData();
+                      Set<Map.Entry<String, Object>> entrySet = dataPulled.entrySet();
+                      Log.e(TAG, "loop begins");
+                      for (Map.Entry<String, Object> entry : entrySet) {
+                          String key = entry.getKey();
+                          if (!(Cloud.contains(key))) {
+                              Cloud.add(key);
+                          }
+                      }
+                      Log.e(TAG, "Here are the confirmed cases " + Cloud.toString());
+                  } else {
+                      Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+                  }
+              }
+          });
+          int CloudDataLength = Cloud.size();
+          Cloud.retainAll(myData);
+          if(Cloud.size()>0)
+          {
 
-                Set<Map.Entry<String, Object>> entrySet = dataPulled.entrySet();
-                 Log.e(TAG,"loop begins");
-                for (Map.Entry<String, Object> entry : entrySet) {
-                    String key = entry.getKey();
-                     Cloud.add(key);
-                }
-                Log.e(TAG,""+Cloud.toString());
-            } else {
-                Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-
+              Log.e(TAG,"There has been exposure to the virus ! ");
+              String bridge = CloudDataLength-Cloud.size()+" exposures to the virus";
+              Toast.makeText(getApplicationContext(), "Unfortunately, you have been in close proximity with someone who is currently Covid-19 +ve", Toast.LENGTH_SHORT).show();
+          }
+          else
+          {
+              Toast.makeText(getApplicationContext(), "No exposure to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+          }
+      }
 
 }
 
@@ -522,6 +591,11 @@ FirebaseFirestore dbi = FirebaseFirestore.getInstance();
         if (running) {
             getLocation();
             DisplayCurrentData();
+            ArrayList<String> currentData = new ArrayList<>();
+            if(!(currentData.isEmpty())) {
+                currentData = getListFromLocal("X");
+                saveListInLocal(currentData, "X");
+            }
         }
 
 
@@ -552,5 +626,24 @@ FirebaseFirestore dbi = FirebaseFirestore.getInstance();
 
     }
 
+        public void Checker()
+        {
+            Log.e(TAG,"Here is where the ArrayList referencing will happen !");
+        }
+
+    private void startLoginActivity() {
+        Intent intent = new Intent(this, LoginRegisterActivity.class);
+        startActivity(intent);
+        finish();
+    }
+    @Override
+    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        if (firebaseAuth.getCurrentUser() == null) {
+            startLoginActivity();
+            return;
+        }
+
+
+    }
 
 }
