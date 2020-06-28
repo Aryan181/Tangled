@@ -84,7 +84,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     private final String TAG = "MainActivity";
     private FieldValue timestamp;
     int number_of_successful_pulls;
-     //String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() % 10 + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
+    //String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() % 10 + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
     String name = "7";
     private SharedPreferences prefs;
     private SharedPreferences.Editor edit;
@@ -92,12 +92,13 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     Gson gson;
     int number_of_pushes = 0;
     int count = 0;
-    ArrayList<String> Cloud= new ArrayList<String>();
-    ArrayList<String> myData ;
+    ArrayList<String> Cloud = new ArrayList<String>();
+    ArrayList<String> myData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-   setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -117,73 +118,51 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         edit.commit();
 
 
-
-
-
-
-
-
         seachbutton = (Button) findViewById(R.id.button_location);//get id of button 1
         seachbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            CheckForPossibleExposure();
+                CheckForPossibleExposure();
                 Checker();
             }
         });
-button_location = (Button) findViewById(R.id.button);
-button_location.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
+        button_location = (Button) findViewById(R.id.button);
+        button_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        count++;
-        int updatedCount = 5-count;
-        if(updatedCount==1)
-        {
-            Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more time for conformation ",Toast.LENGTH_LONG).show();
-        }
-        if(updatedCount>0)
-        Toast.makeText(getApplicationContext(),"Press button "+updatedCount+" more times for conformation ",Toast.LENGTH_LONG).show();
+                count++;
+                int updatedCount = 5 - count;
+                if (updatedCount == 1) {
+                    Toast.makeText(getApplicationContext(), "Press button " + updatedCount + " more time for conformation ", Toast.LENGTH_LONG).show();
+                }
+                if (updatedCount > 0)
+                    Toast.makeText(getApplicationContext(), "Press button " + updatedCount + " more times for conformation ", Toast.LENGTH_LONG).show();
 
 
-        if(updatedCount==0) {
-            Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
-            pushInfo();
-            Uri uri = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLScyVej-Hb7gu0HpYmjyszq1OaCHYlRRJ8X84YyKekf5u4LJjw/viewform"); // missing 'http://' will cause crashed
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                if (updatedCount == 0) {
+                    Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
+                    pushInfo();
+                    Uri uri = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLScyVej-Hb7gu0HpYmjyszq1OaCHYlRRJ8X84YyKekf5u4LJjw/viewform"); // missing 'http://' will cause crashed
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(intent);
+                }
+                if (updatedCount < 0) {
+                    Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
+
+                }
+
+
+            }
+        });
+
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Intent intent = new Intent(getApplicationContext(), LoginRegisterActivity.class);
             startActivity(intent);
-        }
-        if(updatedCount<0)
-        {
-            Toast.makeText(getApplicationContext(), "Thank You for informing us, please stop using the application.", Toast.LENGTH_SHORT);
+            finish();
 
         }
-
-
-    }
-});
-
-
-    if(FirebaseAuth.getInstance().getCurrentUser()==null)
-    {
-        Intent intent = new Intent(getApplicationContext(), LoginRegisterActivity.class);
-        startActivity(intent);
-        finish();
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     }
@@ -195,7 +174,7 @@ button_location.setOnClickListener(new View.OnClickListener() {
         try {
             locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5, MainActivity.this);
-           CheckDocumentStatus();
+            CheckDocumentStatus();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -206,7 +185,7 @@ button_location.setOnClickListener(new View.OnClickListener() {
     public void onLocationChanged(Location location) {
         latitude = "" + location.getLatitude();
         longitude = "" + location.getLongitude();
-       // Toast.makeText(this, "" + location.getLatitude() + "," + location.getLongitude(), Toast.LENGTH_SHORT).show();
+        // Toast.makeText(this, "" + location.getLatitude() + "," + location.getLongitude(), Toast.LENGTH_SHORT).show();
         // Log.e(TAG, "Latitude = "+location.getLatitude()+" Longitude = "+location.getLongitude());
         String docPt1 = latitude.substring(0, latitude.indexOf('.')) + latitude.substring(latitude.indexOf('.') + 1, latitude.indexOf('.') + 4);
         String docPt2 = longitude.substring(0, longitude.indexOf('.')) + longitude.substring(longitude.indexOf('.') + 1, longitude.indexOf('.') + 4);
@@ -217,7 +196,10 @@ button_location.setOnClickListener(new View.OnClickListener() {
             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
             String address = addresses.get(0).getAddressLine(0);
             String accurateCollection = address.substring(0, address.indexOf(','));
-            documents = accurateCollection;
+
+            String docs = address.trim();
+            documents = docs;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -225,9 +207,7 @@ button_location.setOnClickListener(new View.OnClickListener() {
     }
 
 
-
-    public void CheckDocumentStatus()
-    {
+    public void CheckDocumentStatus() {
         FirebaseFirestore dbi = FirebaseFirestore.getInstance();
         DocumentReference docRef = dbi.collection(collections).document(documents);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -236,8 +216,8 @@ button_location.setOnClickListener(new View.OnClickListener() {
                 if (task.isSuccessful()) {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
-                       Log.e(TAG,"Document exists ");
-                       PushUpdate();
+                        Log.e(TAG, "Document exists ");
+                        PushUpdate();
                     } else {
                         Log.e(TAG, "No such document");
                         PushNew();
@@ -249,11 +229,6 @@ button_location.setOnClickListener(new View.OnClickListener() {
             }
         });
     }
-
-
-
-
-
 
 
     public void PushNew() {
@@ -275,20 +250,18 @@ button_location.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully written!");
-                        firstTimePush=true;
+                        firstTimePush = true;
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error writing document", e);
-                        Log.e(TAG,"Failed");
+                        Log.e(TAG, "Failed");
                     }
                 });
 
     }
-
-
 
 
     public void PushUpdate() {
@@ -316,39 +289,18 @@ button_location.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         Log.w(TAG, "Error writing document", e);
-                        Log.e(TAG,"Failed");
+                        Log.e(TAG, "Failed");
                     }
                 });
 
-FetchData();
+        FetchData();
 
 
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void FetchData()
-    {
-       // oldData = getListFromLocal("X");
+    public void FetchData() {
+        // oldData = getListFromLocal("X");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final DocumentReference docRef = db.collection(collections).document(documents);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
@@ -381,7 +333,10 @@ FetchData();
                                 if (myTime.equals(finalTime)) {
                                     DataSaver(key);
                                 }
-                            }}}}
+                            }
+                        }
+                    }
+                }
 
 
 
@@ -420,7 +375,7 @@ FetchData();
                             }
                     //saveListInLocal(oldData,"X");*/
 
-                 else {
+                else {
                     Log.d(TAG, "Current data: null");
                 }
             }
@@ -430,17 +385,16 @@ FetchData();
     }
 
 
-    public void DataSaver(String data)
-    {
-        if(getListFromLocal("X")==null) {
+    public void DataSaver(String data) {
+        if (getListFromLocal("X") == null) {
             saveListInLocal(oldData, "X");
         }
-        oldData  = getListFromLocal("X");
-        if(!(oldData.contains(data))) {
+        oldData = getListFromLocal("X");
+        if (!(oldData.contains(data))) {
             oldData.add(data);
         }
 
-        saveListInLocal(oldData,"X");
+        saveListInLocal(oldData, "X");
 
     }
 
@@ -457,117 +411,102 @@ FetchData();
     }
 
 
-    public ArrayList<String> getListFromLocal(String key)
-    {
-        SharedPreferences prefs =PreferenceManager.getDefaultSharedPreferences(this);
+    public ArrayList<String> getListFromLocal(String key) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         Gson gson = new Gson();
         String json = prefs.getString("X", null);
-        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        Type type = new TypeToken<ArrayList<String>>() {
+        }.getType();
         return gson.fromJson(json, type);
 
     }
 
-    public void DisplayCurrentData()
-    {
+    public void DisplayCurrentData() {
         ArrayList<String> currentData = new ArrayList<>();
         currentData = getListFromLocal("X");
 
-        if(currentData==null)
-        {
-            Log.e(TAG,"No data stored yet");
-        }
-        else
-        {
+        if (currentData == null) {
+            Log.e(TAG, "No data stored yet");
+        } else {
 
-            Log.e(TAG,"The data stored is = "+currentData.toString());
+            Log.e(TAG, "The data stored is = " + currentData.toString());
         }
 
     }
 
 
-public void CheckForPossibleExposure()
-{
-      Toast.makeText(getApplicationContext(),"Checking for exposures",Toast.LENGTH_SHORT);
-      myData = getListFromLocal("X");
-      if(myData!=null) {
-          Log.e(TAG, "Here are my exposures =>" + myData.toString());
+    public void CheckForPossibleExposure() {
+        Toast.makeText(getApplicationContext(), "Checking for exposures", Toast.LENGTH_SHORT);
+        myData = getListFromLocal("X");
+        if (myData != null) {
+            Log.e(TAG, "Here are my exposures =>" + myData.toString());
 
 
-          FirebaseFirestore db = FirebaseFirestore.getInstance();
-          DocumentReference docRef = db.collection("X").document("X");
-          docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-              @Override
-              public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                  @Nullable FirebaseFirestoreException e) {
-                  if (e != null) {
-                      Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
-                      return;
-                  }
-
-                  if (snapshot != null && snapshot.exists()) {
-                      //  Log.d(TAG, "Current data: " + snapshot.getData());
-
-                      Map<String, Object> dataPulled = snapshot.getData();
-
-                      Set<Map.Entry<String, Object>> entrySet = dataPulled.entrySet();
-                      Log.e(TAG, "loop begins");
-                      for (Map.Entry<String, Object> entry : entrySet) {
-                          String key = entry.getKey();
-                          if (!(Cloud.contains(key))) {
-                              Cloud.add(key);
-                          }
-                      }
-                      Log.e(TAG, "Here are the confirmed cases " + Cloud.toString());
-                  } else {
-                      Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
-                  }
-              }
-          });
-          int CloudDataLength = Cloud.size();
-          Cloud.retainAll(myData);
-          if(Cloud.size()>0)
-          {
-
-              Log.e(TAG,"There has been exposure to the virus ! ");
-              String bridge = CloudDataLength-Cloud.size()+" exposures to the virus";
-              Toast.makeText(getApplicationContext(), "Unfortunately, you have been in close proximity with someone who is currently Covid-19 +ve", Toast.LENGTH_SHORT).show();
-          }
-          else
-          {
-              Toast.makeText(getApplicationContext(), "No exposure to Covid-19 so far !", Toast.LENGTH_SHORT).show();
-          }
-      }
-
-}
-
-public void pushInfo()
-{
-FirebaseFirestore dbi = FirebaseFirestore.getInstance();
-    Map<String, Object> data = new HashMap<>();
-    data.put(name, FieldValue.serverTimestamp());
-
-    dbi.collection("X").document(
-            "X")
-            .update(data)
-            .addOnSuccessListener(new OnSuccessListener<Void>() {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            DocumentReference docRef = db.collection("X").document("X");
+            docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                 @Override
-                public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "DocumentSnapshot successfully written!");
-                }
-            })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.w(TAG, "Error writing document", e);
+                public void onEvent(@Nullable DocumentSnapshot snapshot,
+                                    @Nullable FirebaseFirestoreException e) {
+                    if (e != null) {
+                        Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    if (snapshot != null && snapshot.exists()) {
+                        //  Log.d(TAG, "Current data: " + snapshot.getData());
+
+                        Map<String, Object> dataPulled = snapshot.getData();
+
+                        Set<Map.Entry<String, Object>> entrySet = dataPulled.entrySet();
+                        Log.e(TAG, "loop begins");
+                        for (Map.Entry<String, Object> entry : entrySet) {
+                            String key = entry.getKey();
+                            if (!(Cloud.contains(key))) {
+                                Cloud.add(key);
+                            }
+                        }
+                        Log.e(TAG, "Here are the confirmed cases " + Cloud.toString());
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
-}
+            int CloudDataLength = Cloud.size();
+            Cloud.retainAll(myData);
+            if (Cloud.size() > 0) {
 
+                Log.e(TAG, "There has been exposure to the virus ! ");
+                String bridge = CloudDataLength - Cloud.size() + " exposures to the virus";
+                Toast.makeText(getApplicationContext(), "Unfortunately, you have been in close proximity with someone who is currently Covid-19 +ve", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "No exposure to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+            }
+        }
 
+    }
 
+    public void pushInfo() {
+        FirebaseFirestore dbi = FirebaseFirestore.getInstance();
+        Map<String, Object> data = new HashMap<>();
+        data.put(name, FieldValue.serverTimestamp());
 
-
-
+        dbi.collection("X").document(
+                "X")
+                .update(data)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error writing document", e);
+                    }
+                });
+    }
 
 
     @Override
@@ -592,7 +531,7 @@ FirebaseFirestore dbi = FirebaseFirestore.getInstance();
             getLocation();
             DisplayCurrentData();
             ArrayList<String> currentData = new ArrayList<>();
-            if(!(currentData.isEmpty())) {
+            if (!(currentData.isEmpty())) {
                 currentData = getListFromLocal("X");
                 saveListInLocal(currentData, "X");
             }
@@ -626,16 +565,16 @@ FirebaseFirestore dbi = FirebaseFirestore.getInstance();
 
     }
 
-        public void Checker()
-        {
-            Log.e(TAG,"Here is where the ArrayList referencing will happen !");
-        }
+    public void Checker() {
+        Log.e(TAG, "Here is where the ArrayList referencing will happen !");
+    }
 
     private void startLoginActivity() {
         Intent intent = new Intent(this, LoginRegisterActivity.class);
         startActivity(intent);
         finish();
     }
+
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
         if (firebaseAuth.getCurrentUser() == null) {
