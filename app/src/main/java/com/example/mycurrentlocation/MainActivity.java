@@ -16,6 +16,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -84,8 +85,8 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     private final String TAG = "MainActivity";
     private FieldValue timestamp;
     int number_of_successful_pulls;
-    //String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() % 10 + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
-    String name = "7";
+    String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
+
     private SharedPreferences prefs;
     private SharedPreferences.Editor edit;
     Boolean firstSave;
@@ -164,7 +165,6 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
         }
 
-
     }
 
 
@@ -208,6 +208,8 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
 
     public void CheckDocumentStatus() {
+        if(!(name.isEmpty()))
+        {
         FirebaseFirestore dbi = FirebaseFirestore.getInstance();
         DocumentReference docRef = dbi.collection(collections).document(documents);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -228,7 +230,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
                 }
             }
         });
-    }
+    }}
 
 
     public void PushNew() {
@@ -386,19 +388,21 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
 
     public void DataSaver(String data) {
-        if (getListFromLocal("X") == null) {
-            saveListInLocal(oldData, "X");
-        }
-        oldData = getListFromLocal("X");
-        if (!(oldData.contains(data))) {
-            oldData.add(data);
-        }
 
-        saveListInLocal(oldData, "X");
+        if (!(data.equals(name))) {
+            if (getListFromLocal("X") == null) {
+                saveListInLocal(oldData, "X");
+            }
+            oldData = getListFromLocal("X");
+            if (!(oldData.contains(data))) {
+                oldData.add(data);
+            }
+
+            saveListInLocal(oldData, "X");
+
+        }
 
     }
-
-
     public void saveListInLocal(ArrayList<String> list, String key) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -577,7 +581,10 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
     @Override
     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        if (firebaseAuth.getCurrentUser() == null) {
+        if (firebaseAuth.getCurrentUser() == null)
+        {
+            Log.e(TAG, " Here is the current user id => " +firebaseAuth.getCurrentUser());
+            name = ""+firebaseAuth.getCurrentUser();
             startLoginActivity();
             return;
         }
