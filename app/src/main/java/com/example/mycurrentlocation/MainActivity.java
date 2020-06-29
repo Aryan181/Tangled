@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static java.lang.String.valueOf;
 
@@ -95,6 +96,13 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     int count = 0;
     ArrayList<String> Cloud = new ArrayList<String>();
     ArrayList<String> myData;
+
+    private SharedPreferences prefsi;
+    private SharedPreferences.Editor editori;
+    private int totalCounti;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,7 +161,6 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
                 }
 
-
             }
         });
 
@@ -187,9 +194,11 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         longitude = "" + location.getLongitude();
         // Toast.makeText(this, "" + location.getLatitude() + "," + location.getLongitude(), Toast.LENGTH_SHORT).show();
         // Log.e(TAG, "Latitude = "+location.getLatitude()+" Longitude = "+location.getLongitude());
-        String docPt1 = latitude.substring(0, latitude.indexOf('.')) + latitude.substring(latitude.indexOf('.') + 1, latitude.indexOf('.') + 4);
-        String docPt2 = longitude.substring(0, longitude.indexOf('.')) + longitude.substring(longitude.indexOf('.') + 1, longitude.indexOf('.') + 4);
-        collections = docPt1 + docPt2;
+        if((latitude.length()>5)&&(longitude.length()>5)) {
+            String docPt1 = latitude.substring(0, latitude.indexOf('.')) + latitude.substring(latitude.indexOf('.') + 1, latitude.indexOf('.') + 5);
+            String docPt2 = longitude.substring(0, longitude.indexOf('.')) + longitude.substring(longitude.indexOf('.') + 1, longitude.indexOf('.') +5);
+            collections = docPt1 + docPt2;
+        }
         // Log.e(TAG,""+documents);
         try {
             Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
@@ -203,11 +212,16 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        UUID s  = UUID.randomUUID();
+        Log.e(TAG,"Here is the random UUID =>"+s);
     }
 
 
     public void CheckDocumentStatus() {
+
+
+
+
         if(!(name.isEmpty()))
         {
         FirebaseFirestore dbi = FirebaseFirestore.getInstance();
