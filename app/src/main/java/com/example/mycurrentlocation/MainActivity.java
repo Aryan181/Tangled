@@ -18,6 +18,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
@@ -86,8 +87,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     private final String TAG = "MainActivity";
     private FieldValue timestamp;
     int number_of_successful_pulls;
-    String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length() % 10;
-
+   String name  = Build.BOARD.length()+"" + Build.BRAND + Build.DEVICE + Build.DISPLAY.length() % 10 + Build.HOST.length() % 10 + Build.ID.length() + Build.MANUFACTURER.length() % 10 + Build.MODEL.length() % 10 + Build.PRODUCT.length() % 10+ Build.TAGS.length() % 10 + Build.TYPE + Build.USER.length();
     private SharedPreferences prefs;
     private SharedPreferences.Editor edit;
     Boolean firstSave;
@@ -100,7 +100,6 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     private SharedPreferences prefsi;
     private SharedPreferences.Editor editori;
     private int totalCounti;
-
 
 
 
@@ -145,7 +144,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
                 if (updatedCount == 1) {
                     Toast.makeText(getApplicationContext(), "Press button " + updatedCount + " more time for conformation ", Toast.LENGTH_LONG).show();
                 }
-                if (updatedCount > 0)
+                if (updatedCount > 1)
                     Toast.makeText(getApplicationContext(), "Press button " + updatedCount + " more times for conformation ", Toast.LENGTH_LONG).show();
 
 
@@ -195,8 +194,8 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         // Toast.makeText(this, "" + location.getLatitude() + "," + location.getLongitude(), Toast.LENGTH_SHORT).show();
         // Log.e(TAG, "Latitude = "+location.getLatitude()+" Longitude = "+location.getLongitude());
         if((latitude.length()>5)&&(longitude.length()>5)) {
-            String docPt1 = latitude.substring(0, latitude.indexOf('.')) + latitude.substring(latitude.indexOf('.') + 1, latitude.indexOf('.') + 5);
-            String docPt2 = longitude.substring(0, longitude.indexOf('.')) + longitude.substring(longitude.indexOf('.') + 1, longitude.indexOf('.') +5);
+            String docPt1 = latitude.substring(0, latitude.indexOf('.')) + latitude.substring(latitude.indexOf('.') + 1, latitude.indexOf('.') + 4);
+            String docPt2 = longitude.substring(0, longitude.indexOf('.')) + longitude.substring(longitude.indexOf('.') + 1, longitude.indexOf('.') +4);
             collections = docPt1 + docPt2;
         }
         // Log.e(TAG,""+documents);
@@ -225,7 +224,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         if(!(name.isEmpty()))
         {
         FirebaseFirestore dbi = FirebaseFirestore.getInstance();
-        DocumentReference docRef = dbi.collection(collections).document(documents);
+        DocumentReference docRef = dbi.collection(documents).document(collections);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -260,7 +259,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
         docData.put(name, FieldValue.serverTimestamp());
 
-        db.collection(collections).document(documents)
+        db.collection(documents).document(collections)
                 .set(docData)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -293,7 +292,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
         docData.put(name, FieldValue.serverTimestamp());
 
-        db.collection(collections).document(documents)
+        db.collection(documents).document(collections)
                 .update(docData)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -318,7 +317,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     public void FetchData() {
         // oldData = getListFromLocal("X");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final DocumentReference docRef = db.collection(collections).document(documents);
+        final DocumentReference docRef = db.collection(documents).document(collections);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot snapshot,
@@ -357,40 +356,6 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
 
 
-                                  /*  if ((oldData==null)||(oldData.isEmpty())) {
-                                        oldData = new ArrayList<>();
-                                        // Log.e(TAG,"This is the first time you are pulling data");
-                                        saveListInLocal(oldData, "X");
-
-                                        oldData = getListFromLocal("X");
-                                        if (finalTime.equals(myTime)) {
-                                            oldData.add(key);
-                                            saveListInLocal(oldData, "X");
-                                        }
-
-                                        saveListInLocal(oldData,"X");
-
-                                    } else {
-                                        // Log.e(TAG,"This is not the first time we are pulling data ");
-                                        oldData = getListFromLocal("X");
-                                        if (!(oldData.contains(key))) {
-                                            if (finalTime.equals(myTime)) {
-
-                                                oldData.add(key);}
-                                           saveListInLocal(oldData, "X");
-                                        }
-                                        }
-                                        //  Log.e(TAG,oldData.toString());
-
-                                       // saveListInLocal(oldData,"X");
-                                    }
-                            ////saveListInLocal(oldData,"X");
-
-                                }
-                        //saveListInLocal(oldData,"X");
-                            }
-                    //saveListInLocal(oldData,"X");*/
-
                 else {
                     Log.d(TAG, "Current data: null");
                 }
@@ -401,8 +366,8 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     }
 
 
-    public void DataSaver(String data) {
-
+    public void DataSaver(String Data) {
+        String data = Data.trim();
         if (!(data.equals(name))) {
             if (getListFromLocal("X") == null) {
                 saveListInLocal(oldData, "X");
@@ -486,7 +451,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
                         }
                         Log.e(TAG, "Here are the confirmed cases " + Cloud.toString());
                     } else {
-                        Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
+                      //  Toast.makeText(getApplicationContext(), "No exposures to Covid-19 so far !", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -494,12 +459,16 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
             Cloud.retainAll(myData);
             if (Cloud.size() > 0) {
 
-                Log.e(TAG, "There has been exposure to the virus ! ");
+
                 String bridge = CloudDataLength - Cloud.size() + " exposures to the virus";
-                Toast.makeText(getApplicationContext(), "Unfortunately, you have been in close proximity with someone who is currently Covid-19 +ve", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Unfortunately, you have been in close proximity with someone who is currently Covid-19 +ve", Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(getApplicationContext(), "No exposure to Covid-19 so far !", Toast.LENGTH_SHORT).show();
             }
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"No exposure to Covid-19 so far !",Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -546,20 +515,14 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (running) {
-            getLocation();
-            DisplayCurrentData();
-            ArrayList<String> currentData = new ArrayList<>();
-            if (!(currentData.isEmpty())) {
-                currentData = getListFromLocal("X");
-                saveListInLocal(currentData, "X");
-            }
+
         }
 
 
     }
 
 
-    @Override
+  /*  @Override
     protected void onResume() {
         super.onResume();
         running = true;
@@ -575,7 +538,7 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
         super.onPause();
         running = false;
 
-    }
+    }*/
 
 
     @Override
@@ -605,5 +568,82 @@ public class MainActivity<sensorManager> extends AppCompatActivity implements Lo
 
 
     }
+
+
+
+
+
+    Handler handler = new Handler();
+    Runnable runnable;
+    int delay = 15*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+
+
+    @Override
+    protected void onResume() {
+        //start handler as activity become visible
+
+        handler.postDelayed( runnable = new Runnable() {
+            public void run() {
+                //do something
+                getLocation();
+                DisplayCurrentData();
+                ArrayList<String> currentData = new ArrayList<>();
+                if (!(currentData.isEmpty())) {
+                    currentData = getListFromLocal("X");
+                    saveListInLocal(currentData, "X");
+                }
+
+                handler.postDelayed(runnable, delay);
+            }
+        }, delay);
+
+        super.onResume();
+    }
+
+// If onPause() is not included the threads will double up when you
+// reload the activity
+
+    @Override
+    protected void onPause() {
+        handler.removeCallbacks(runnable); //stop handler when activity not visible
+        super.onPause();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

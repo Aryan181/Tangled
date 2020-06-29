@@ -76,4 +76,10 @@ public class LoginRegisterActivity extends AppCompatActivity {
             }
         }
     }
+
+    public String UID()
+    {
+        return FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
 }
